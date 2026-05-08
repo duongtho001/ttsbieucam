@@ -3,12 +3,12 @@
  */
 import React, { useState, useRef } from 'react';
 import { Upload, Globe, Play, Download, Loader2, Trash2, CheckCircle, AlertCircle, Languages, Volume2 } from 'lucide-react';
-import { parseSrt, SrtEntry, entriesToSrt, downloadText } from './srtParser';
+import { parseSrt, SrtEntry, entriesToSrt, downloadText } from '../srtParser';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { getNextApiKey, getNextApiKeyExcluding } from './apiKeyManager';
-import { buildTTSPrompt } from './promptBuilder';
-import { VN_VOICES } from './vnVoices';
-import { VOICE_DATA, SUPPORTED_LANGUAGES } from './constants';
+import { getNextApiKey, getNextApiKeyExcluding } from '../apiKeyManager';
+import { buildTTSPrompt } from '../promptBuilder';
+import { VN_VOICES } from '../vnVoices';
+import { VOICE_DATA, SUPPORTED_LANGUAGES } from '../constants';
 
 // WAV helpers
 function b64d(b:string){const s=atob(b),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a}

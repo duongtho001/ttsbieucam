@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useAuth } from './authContext';
 import { navigate } from './router';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { Mic, Settings, Play, Square, Download, Loader2, History, Trash2, ChevronDown, Volume2, AlertCircle, Clock, X, Sparkles, Gauge, Music, Save, FolderOpen, Upload, Menu } from 'lucide-react';
+import { Mic, Settings, Play, Square, Download, Loader2, History, Trash2, ChevronDown, Volume2, AlertCircle, Clock, X, Sparkles, Gauge, Music, Save, FolderOpen, Upload, Menu, HelpCircle, BookOpen, Key, FileText, Palette, Globe } from 'lucide-react';
 import { parseSrt } from './srtParser';
 import { VOICE_DATA, SUPPORTED_LANGUAGES } from './constants';
 import { VN_VOICES, VnVoice } from './vnVoices';
@@ -261,6 +261,7 @@ const App: React.FC = () => {
   const vnVoices = VN_VOICES.filter(v=>gFilter==='All'||(gFilter==='Female'?v.gender==='Nữ':v.gender==='Nam'));
   const selVn = VN_VOICES.find(v=>v.name===voice);
   const selIntl = VOICE_DATA.find(v=>v.name===voice);
+  const [showGuide, setShowGuide] = useState(false);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{background:'var(--bg-primary)'}}>
@@ -275,6 +276,9 @@ const App: React.FC = () => {
           <span className="logo-text text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>Voice Studio</span>
         </div>
         <div className="header-btns flex items-center gap-2">
+          <button onClick={()=>setShowGuide(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'transparent',border:'1px solid var(--border)',color:'var(--text-secondary)'}}>
+            <HelpCircle size={13}/><span>Hướng dẫn</span>
+          </button>
           <button onClick={()=>setShowHistory(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:gens.length?'var(--accent-light)':'transparent',border:`1px solid ${gens.length?'rgba(124,58,237,0.2)':'var(--border)'}`,color:gens.length?'var(--accent)':'var(--text-secondary)'}}>
             <History size={13}/><span>Lịch sử</span>
             {gens.length>0&&<span className="w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center" style={{background:'var(--accent)',color:'white'}}>{gens.length}</span>}
@@ -621,6 +625,117 @@ const App: React.FC = () => {
       )}
 
       {showSettings&&<SettingsModal onClose={()=>{setShowSettings(false);setKeyCount(loadApiKeys().length)}} language="vi"/>}
+
+      {/* User Guide Modal */}
+      {showGuide&&(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 animate-fade-in" style={{background:'rgba(0,0,0,0.5)',backdropFilter:'blur(4px)'}} onClick={()=>setShowGuide(false)}/>
+          <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl animate-fade-in" style={{background:'#ffffff',border:'1px solid var(--border)',boxShadow:'0 24px 48px rgba(0,0,0,0.15)'}}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b" style={{borderColor:'var(--border)'}}>
+              <div className="flex items-center gap-2">
+                <BookOpen size={18} style={{color:'var(--accent)'}}/>
+                <h2 className="text-base font-bold" style={{color:'var(--text-primary)'}}>Hướng dẫn sử dụng Voice Studio</h2>
+              </div>
+              <button onClick={()=>setShowGuide(false)} className="p-2 rounded-lg hover:bg-gray-100 transition"><X size={16} style={{color:'var(--text-muted)'}}/></button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto custom-scroll px-6 py-5 space-y-6">
+
+              {/* Step 1 */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#fef3c7'}}><Key size={16} style={{color:'#b45309'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Bước 1: Thêm API Key</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    Nhấn nút <b>"API Keys"</b> ở góc trên bên phải → Dán Google Gemini API key của bạn vào.
+                    Bạn có thể thêm <b>nhiều key</b> để hệ thống tự xoay vòng, tránh giới hạn quota.
+                  </p>
+                  <p className="text-[11px] mt-1.5 px-2 py-1 rounded-lg inline-block" style={{background:'#eff6ff',color:'#1d4ed8'}}>
+                    💡 Lấy key miễn phí tại: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" style={{textDecoration:'underline'}}>aistudio.google.com/apikey</a>
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'var(--accent-light)'}}><Mic size={16} style={{color:'var(--accent)'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Bước 2: Chọn giọng đọc</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    Thanh bên trái có 2 chế độ:<br/>
+                    • <b>🇻🇳 Giọng VN</b> — 30+ giọng Việt Nam (miền Bắc, Nam, nhân vật đặc sắc)<br/>
+                    • <b>🌍 Quốc tế</b> — Giọng tiếng Anh, đa ngôn ngữ<br/>
+                    Lọc theo <b>Nam / Nữ</b> để tìm nhanh hơn.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#ecfdf5'}}><FileText size={16} style={{color:'#059669'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Bước 3: Nhập văn bản</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    Tab <b>"✏️ Văn bản"</b>: Dán hoặc nhập nội dung muốn đọc → Nhấn <b>"🎙 Tạo giọng nói"</b>.<br/>
+                    Sau khi tạo xong, nhấn <b>⬇ tải WAV</b> hoặc <b>SRT</b> (phụ đề tự tạo kèm audio).
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#fdf2f8'}}><Sparkles size={16} style={{color:'#db2777'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Bước 4: AI Diễn cảm (nâng cao)</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    Nhấn nút <b>"🎭 AI Diễn cảm"</b> để AI tự phân tích văn bản và tạo phong cách giọng phù hợp.<br/>
+                    AI sẽ tự thêm biểu cảm: vui, buồn, nghiêm túc, hào hứng... tùy nội dung.<br/>
+                    Bạn có thể <b>Lưu profile</b> để dùng lại cho các đoạn text khác.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 5 */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#eff6ff'}}><Upload size={16} style={{color:'#2563eb'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Bước 5: Tải file SRT / TXT</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    Chuyển sang tab <b>"📄 SRT / File"</b> → Upload file phụ đề <b>.srt</b> hoặc văn bản <b>.txt</b>.<br/>
+                    • <b>Dịch tất cả</b>: Dịch phụ đề sang ngôn ngữ khác (Anh, Nhật, Hàn...)<br/>
+                    • <b>Tạo audio tất cả</b>: Tạo giọng đọc cho từng đoạn, tải từng file hoặc tải hết.<br/>
+                    • <b>Tải SRT đã dịch</b>: Xuất file phụ đề đã dịch.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 6 */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#f5f3ff'}}><Palette size={16} style={{color:'#7c3aed'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Mẹo sử dụng</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    • Thêm <b>nhiều API key</b> để không bị giới hạn lượt dùng.<br/>
+                    • Chọn <b>Ngôn ngữ phát âm</b> phù hợp (sidebar bên trái) trước khi tạo.<br/>
+                    • Điều chỉnh <b>Tốc độ</b> và <b>Cao độ</b> cho giọng tự nhiên hơn.<br/>
+                    • Lưu <b>Profile giọng</b> yêu thích để tái sử dụng nhanh.<br/>
+                    • Với SRT: Dịch trước → kiểm tra → tạo audio.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t flex items-center justify-between" style={{borderColor:'var(--border)'}}>
+              <p className="text-[11px]" style={{color:'var(--text-muted)'}}>Voice Studio — Powered by Gemini AI</p>
+              <button onClick={()=>setShowGuide(false)} className="px-4 py-2 rounded-lg text-xs font-semibold" style={{background:'var(--accent)',color:'white'}}>Đã hiểu!</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

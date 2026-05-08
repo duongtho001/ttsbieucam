@@ -281,7 +281,7 @@ const App: React.FC = () => {
           </button>
           <button onClick={()=>setShowSettings(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all relative" style={{background:keyCount?'var(--accent-light)':'#fef3c7',border:`1px solid ${keyCount?'rgba(124,58,237,0.2)':'#fcd34d'}`,color:keyCount?'var(--accent)':'#b45309'}}>
             <Settings size={13}/><span>API Keys</span>
-            {!keyCount&&<span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{background:'#f59e0b',animation:'barBounce 1s infinite'}}/>}}
+            {!keyCount&&<span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{background:'#f59e0b',animation:'barBounce 1s infinite'}}/>}
           </button>
           {user && (
             <>

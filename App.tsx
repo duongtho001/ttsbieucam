@@ -21,7 +21,9 @@ function toWav(p:Uint8Array){const b=new ArrayBuffer(44+p.length),v=new DataView
 type VoiceMode = 'international' | 'vietnamese';
 
 const App: React.FC = () => {
-  const { user, logout } = useAuth();
+  const auth = useAuth();
+  const user = auth?.user || null;
+  const logout = auth?.logout || (() => {});
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [keyCount, setKeyCount] = useState(()=>loadApiKeys().length);

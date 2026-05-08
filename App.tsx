@@ -278,13 +278,15 @@ const App: React.FC = () => {
             <Settings size={13}/><span>API Keys</span>
             {!keyCount&&<span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{background:'#fbbf24',animation:'barBounce 1s infinite'}}/>}
           </button>
-          <button onClick={()=>navigate('/admin')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'rgba(255,255,255,0.05)',border:'1px solid var(--border)',color:'var(--text-muted)'}}>
-            <Settings size={13}/><span>Admin</span>
-          </button>
           {user && (
-            <button onClick={()=>{logout();navigate('/')}} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',color:'#f87171'}}>
-              <span>Đăng xuất</span>
-            </button>
+            <>
+              <button onClick={()=>navigate('/admin')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'rgba(255,255,255,0.05)',border:'1px solid var(--border)',color:'var(--text-muted)'}}>
+                <Settings size={13}/><span>Admin</span>
+              </button>
+              <button onClick={()=>{logout();navigate('/')}} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',color:'#f87171'}}>
+                <span>Đăng xuất</span>
+              </button>
+            </>
           )}
         </div>
       </header>

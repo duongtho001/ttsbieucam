@@ -17,7 +17,7 @@ export default function Landing() {
           <div className="logo-icon">
             <Mic size={18} color="white" />
           </div>
-          <span className="text-white font-bold text-lg tracking-tight">Voice Studio</span>
+          <span className="font-bold text-lg tracking-tight" style={{color:'var(--text-primary)'}}>Voice Studio</span>
         </div>
         <nav className="flex items-center gap-3">
           {user ? (
@@ -122,7 +122,7 @@ export default function Landing() {
           <div className="logo-icon" style={{ width: 28, height: 28 }}>
             <Mic size={14} color="white" />
           </div>
-          <span className="text-sm font-semibold text-white">Voice Studio</span>
+          <span className="text-sm font-semibold" style={{color:'var(--text-primary)'}}>Voice Studio</span>
         </div>
         <div className="footer-contact">
           <MessageCircle size={16} />

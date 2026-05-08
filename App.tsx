@@ -267,28 +267,28 @@ const App: React.FC = () => {
       <div className="ambient-glow"/>
 
       {/* Header */}
-      <header className="studio-header relative z-50 flex items-center justify-between px-5 h-14 border-b" style={{borderColor:'var(--border)',background:'rgba(255,255,255,0.05)',backdropFilter:'blur(20px)'}}>
+      <header className="studio-header relative z-50 flex items-center justify-between px-5 h-14 border-b" style={{borderColor:'var(--border)',background:'#ffffff'}}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'linear-gradient(135deg,#7c3aed,#6366f1)',boxShadow:'0 2px 12px rgba(124,58,237,0.4)'}}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'var(--accent)'}}>
             <Mic size={15} color="white"/>
           </div>
-          <span className="logo-text text-sm font-bold tracking-tight text-white">Voice Studio</span>
+          <span className="logo-text text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>Voice Studio</span>
         </div>
         <div className="header-btns flex items-center gap-2">
-          <button onClick={()=>setShowHistory(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:gens.length?'rgba(139,92,246,0.15)':'rgba(255,255,255,0.05)',border:`1px solid ${gens.length?'rgba(139,92,246,0.3)':'var(--border)'}`,color:gens.length?'#a78bfa':'var(--text-secondary)'}}>
+          <button onClick={()=>setShowHistory(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:gens.length?'var(--accent-light)':'transparent',border:`1px solid ${gens.length?'rgba(124,58,237,0.2)':'var(--border)'}`,color:gens.length?'var(--accent)':'var(--text-secondary)'}}>
             <History size={13}/><span>Lịch sử</span>
-            {gens.length>0&&<span className="w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center" style={{background:'#7c3aed',color:'white'}}>{gens.length}</span>}
+            {gens.length>0&&<span className="w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center" style={{background:'var(--accent)',color:'white'}}>{gens.length}</span>}
           </button>
-          <button onClick={()=>setShowSettings(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all relative" style={{background:keyCount?'rgba(139,92,246,0.12)':'rgba(251,191,36,0.12)',border:`1px solid ${keyCount?'rgba(139,92,246,0.25)':'rgba(251,191,36,0.3)'}`,color:keyCount?'#a78bfa':'#fbbf24'}}>
+          <button onClick={()=>setShowSettings(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all relative" style={{background:keyCount?'var(--accent-light)':'#fef3c7',border:`1px solid ${keyCount?'rgba(124,58,237,0.2)':'#fcd34d'}`,color:keyCount?'var(--accent)':'#b45309'}}>
             <Settings size={13}/><span>API Keys</span>
-            {!keyCount&&<span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{background:'#fbbf24',animation:'barBounce 1s infinite'}}/>}
+            {!keyCount&&<span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{background:'#f59e0b',animation:'barBounce 1s infinite'}}/>}}
           </button>
           {user && (
             <>
-              <button onClick={()=>navigate('/admin')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'rgba(255,255,255,0.05)',border:'1px solid var(--border)',color:'var(--text-muted)'}}>
+              <button onClick={()=>navigate('/admin')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'transparent',border:'1px solid var(--border)',color:'var(--text-muted)'}}>
                 <Settings size={13}/><span>Admin</span>
               </button>
-              <button onClick={()=>{logout();navigate('/')}} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',color:'#f87171'}}>
+              <button onClick={()=>{logout();navigate('/')}} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:'#fef2f2',border:'1px solid #fecaca',color:'#dc2626'}}>
                 <span>Đăng xuất</span>
               </button>
             </>
@@ -306,10 +306,10 @@ const App: React.FC = () => {
         </div>
 
         {/* LEFT PANEL */}
-        <aside className={`studio-sidebar w-[300px] shrink-0 border-r flex flex-col overflow-hidden ${sidebarOpen?'expanded':'collapsed'}`} style={{borderColor:'var(--border)',background:'rgba(255,255,255,0.04)'}}>
+        <aside className={`studio-sidebar w-[300px] shrink-0 border-r flex flex-col overflow-hidden ${sidebarOpen?'expanded':'collapsed'}`} style={{borderColor:'var(--border)',background:'var(--bg-secondary)'}}>
           {/* Voice Mode Toggle */}
           <div className="p-4 border-b" style={{borderColor:'var(--border)'}}>
-            <div className="flex gap-1 mb-3 p-1 rounded-xl" style={{background:'rgba(255,255,255,0.06)'}}>
+            <div className="flex gap-1 mb-3 p-1 rounded-xl" style={{background:'#f5f5f5'}}>
               <button onClick={()=>{setVoiceMode('vietnamese');setVoice(VN_VOICES[0].name)}} className={`pill-btn flex-1 ${voiceMode==='vietnamese'?'active':''}`}>🇻🇳 Giọng VN</button>
               <button onClick={()=>{setVoiceMode('international');setVoice(VOICE_DATA[0].name)}} className={`pill-btn flex-1 ${voiceMode==='international'?'active':''}`}>🌍 Quốc tế</button>
             </div>
@@ -323,10 +323,10 @@ const App: React.FC = () => {
             {/* Mobile voice dropdown — shown only on mobile via CSS */}
             <div className="mobile-voice-select">
               <select value={voice} onChange={e=>setVoice(e.target.value)}
-                className="w-full rounded-lg px-3 py-2 text-xs font-medium text-white appearance-none cursor-pointer outline-none"
-                style={{background:'rgba(255,255,255,0.08)',border:'1px solid var(--border)'}}>
+                className="w-full rounded-lg px-3 py-2 text-xs font-medium text-gray-900 appearance-none cursor-pointer outline-none"
+                style={{background:'#f5f5f5',border:'1px solid var(--border)'}}>
                 {voiceMode==='vietnamese'
-                  ? vnVoices.map(v=><option key={v.name} value={v.name} style={{background:'#18181b'}}>{v.name} — {v.gender}</option>)
+                  ? vnVoices.map(v=><option key={v.name} value={v.name} style={{background:'#ffffff'}}>{v.name} — {v.gender}</option>)
                   : intlVoices.map(v=><option key={v.name} value={v.name} style={{background:'#18181b'}}>{v.name} — {v.analysis.gender}</option>)
                 }
               </select>
@@ -338,7 +338,7 @@ const App: React.FC = () => {
             {voiceMode==='vietnamese' ? vnVoices.map(v=>(
               <div key={v.name} onClick={()=>setVoice(v.name)} className={`voice-card ${voice===v.name?'active':''}`}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[13px] font-semibold text-white">{v.name}</span>
+                  <span className="text-[13px] font-semibold text-gray-900">{v.name}</span>
                   <span className="text-[10px]" style={{color:'var(--text-muted)'}}>{v.gender}</span>
                 </div>
                 <p className="text-[10px] leading-relaxed" style={{color:'var(--text-secondary)'}}>{v.description}</p>
@@ -346,7 +346,7 @@ const App: React.FC = () => {
             )) : intlVoices.map(v=>(
               <div key={v.name} onClick={()=>setVoice(v.name)} className={`voice-card ${voice===v.name?'active':''}`}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[13px] font-semibold text-white">{v.name}</span>
+                  <span className="text-[13px] font-semibold text-gray-900">{v.name}</span>
                   <span className="text-[10px]" style={{color:'var(--text-muted)'}}>{v.analysis.gender}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -363,7 +363,7 @@ const App: React.FC = () => {
             <div>
               <label className="text-[10px] font-bold uppercase tracking-[0.12em] block mb-1.5" style={{color:'var(--text-muted)'}}>Ngôn ngữ phát âm</label>
               <div className="relative">
-                <select value={tLang} onChange={e=>setTLang(e.target.value)} className="w-full rounded-lg px-3 py-2 text-xs font-medium text-white appearance-none cursor-pointer pr-8 outline-none" style={{background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)'}}>
+                <select value={tLang} onChange={e=>setTLang(e.target.value)} className="w-full rounded-lg px-3 py-2 text-xs font-medium text-gray-900 appearance-none cursor-pointer pr-8 outline-none" style={{background:'#f5f5f5',border:'1px solid var(--border)'}}>
                   {SUPPORTED_LANGUAGES.map(l=><option key={l.code} value={l.code} style={{background:'#18181b'}}>{l.name}</option>)}
                 </select>
                 <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{color:'var(--text-muted)'}}/>
@@ -391,7 +391,7 @@ const App: React.FC = () => {
         {/* RIGHT PANEL */}
         <section className="studio-right flex-1 flex flex-col overflow-hidden p-5 gap-4">
           {/* Tab Toggle: Text vs SRT */}
-          <div className="flex gap-1 p-1 rounded-xl shrink-0" style={{background:'rgba(255,255,255,0.06)'}}>
+          <div className="flex gap-1 p-1 rounded-xl shrink-0" style={{background:'#f5f5f5'}}>
             <button onClick={()=>setStudioTab('text')} className={`pill-btn flex-1 ${studioTab==='text'?'active':''}`}>✏️ Văn bản</button>
             <button onClick={()=>setStudioTab('srt')} className={`pill-btn flex-1 ${studioTab==='srt'?'active':''}`}>📄 SRT / File</button>
           </div>
@@ -402,17 +402,17 @@ const App: React.FC = () => {
           <>
           {/* Voice badge */}
           <div className="flex items-center gap-3 glass-panel px-4 py-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'rgba(139,92,246,0.15)'}}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'var(--accent-light)'}}>
               <Volume2 size={14} style={{color:'var(--accent-bright)'}}/>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-white truncate">{voice}</div>
+              <div className="text-sm font-bold text-gray-900 truncate">{voice}</div>
               <div className="text-[11px] truncate" style={{color:'var(--text-secondary)'}}>
                 {voiceMode==='vietnamese'&&selVn ? selVn.description : selIntl ? `${selIntl.analysis.gender} · ${selIntl.pitch}` : ''}
               </div>
             </div>
             {voiceMode==='vietnamese'&&selVn&&(
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shrink-0" style={{background:'rgba(16,185,129,0.12)',color:'#34d399',border:'1px solid rgba(16,185,129,0.2)'}}>VN</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full shrink-0" style={{background:'#ecfdf5',color:'#059669',border:'1px solid #a7f3d0'}}>VN</span>
             )}
           </div>
 
@@ -475,16 +475,16 @@ const App: React.FC = () => {
                   <FolderOpen size={11}/>{savedProfiles.length>0 ? '📂 Giọng đã lưu ('+savedProfiles.length+')' : '📂 Chưa có'}
                 </button>
                 {showLoadMenu && savedProfiles.length>0 && (
-                  <div className="absolute top-full left-0 mt-1 w-80 max-h-72 overflow-y-auto custom-scroll rounded-xl z-50" style={{background:'#1a1a2e',border:'1px solid var(--border)',boxShadow:'0 8px 32px rgba(0,0,0,0.5)'}}>
+                  <div className="absolute top-full left-0 mt-1 w-80 max-h-72 overflow-y-auto custom-scroll rounded-xl z-50" style={{background:'#ffffff',border:'1px solid var(--border)',boxShadow:'0 8px 32px rgba(0,0,0,0.12)'}}>
                     <div className="px-3 py-2 border-b" style={{borderColor:'var(--border)'}}>
                       <span className="text-[10px] font-bold uppercase tracking-wider" style={{color:'var(--text-muted)'}}>Chọn profile → nhập text mới → tạo cùng giọng</span>
                     </div>
                     {savedProfiles.map(p=>(
                       <div key={p.id} className="flex items-center justify-between px-3 py-2.5 hover:bg-white/5 cursor-pointer border-b group" style={{borderColor:'var(--border)'}} onClick={()=>{setAudioProfile(p.audioProfile);setVoiceMode(p.voiceMode as VoiceMode);setVoice(p.voiceName);setShowProfile(true);setShowLoadMenu(false)}}>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[11px] font-semibold text-white truncate">{p.name}</div>
+                          <div className="text-[11px] font-semibold text-gray-900 truncate">{p.name}</div>
                           <div className="flex gap-2 mt-0.5">
-                            <span className="text-[9px] px-1.5 py-0.5 rounded" style={{background:'rgba(139,92,246,0.15)',color:'#c4b5fd'}}>{p.voiceName}</span>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded" style={{background:'var(--accent-light)',color:'var(--accent)'}}>{p.voiceName}</span>
                             <span className="text-[9px]" style={{color:'var(--text-muted)'}}>{new Date(p.createdAt).toLocaleString('vi')}</span>
                           </div>
                         </div>
@@ -585,9 +585,9 @@ const App: React.FC = () => {
       {showHistory&&(
         <div className="fixed inset-0 z-[100] flex">
           <div className="absolute inset-0 animate-fade-in" style={{background:'rgba(0,0,0,0.6)',backdropFilter:'blur(4px)'}} onClick={()=>setShowHistory(false)}/>
-          <div className="ml-auto w-full max-w-md flex flex-col animate-slide-in relative" style={{background:'#111116',borderLeft:'1px solid var(--border)'}}>
+          <div className="ml-auto w-full max-w-md flex flex-col animate-slide-in relative" style={{background:'#ffffff',borderLeft:'1px solid var(--border)'}}>
             <div className="p-5 flex items-center justify-between border-b" style={{borderColor:'var(--border)'}}>
-              <h2 className="font-bold text-white text-sm">Lịch sử ({gens.length})</h2>
+              <h2 className="font-bold text-gray-900 text-sm">Lịch sử ({gens.length})</h2>
               <button onClick={()=>setShowHistory(false)} className="p-2 rounded-lg" style={{color:'var(--text-muted)'}}><X size={16}/></button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">

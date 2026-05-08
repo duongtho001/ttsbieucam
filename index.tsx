@@ -22,10 +22,6 @@ function AppRouter() {
   return (
     <Router>
       {(route: Route) => {
-        // Guard: /studio cần đăng nhập
-        if (route === '/studio' && !user) {
-          return <RedirectTo to="/login" />;
-        }
         // Đã login → redirect từ / về /studio
         if (route === '/' && user) {
           return <RedirectTo to="/studio" />;

@@ -531,6 +531,38 @@ const App: React.FC = () => {
                 </button>
               )}
               {lastAudio&&<button onClick={()=>dl(lastAudio,`voice_${Date.now()}.wav`)} className="p-3 rounded-xl transition-all hover:scale-105" style={{background:'rgba(255,255,255,0.05)',border:'1px solid var(--border)',color:'var(--text-secondary)'}} title="Tải WAV"><Download size={16}/></button>}
+              {lastAudio&&<button onClick={()=>{
+                // Generate SRT from text
+                const sentences = text.split(/(?<=[.!?。？！\n])\s*/).filter(s=>s.trim());
+                if (!sentences.length) return;
+                // Get audio duration
+                const audio = new Audio(lastAudio);
+                audio.addEventListener('loadedmetadata', ()=>{
+                  const totalDur = audio.duration || 10;
+                  const totalChars = sentences.reduce((a,s)=>a+s.length, 0);
+                  let currentTime = 0;
+                  const srtLines = sentences.map((s, i) => {
+                    const dur = (s.length / totalChars) * totalDur;
+                    const start = currentTime;
+                    const end = currentTime + dur;
+                    currentTime = end;
+                    const fmt = (t: number) => {
+                      const h = Math.floor(t/3600);
+                      const m = Math.floor((t%3600)/60);
+                      const sec = Math.floor(t%60);
+                      const ms = Math.round((t%1)*1000);
+                      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')},${String(ms).padStart(3,'0')}`;
+                    };
+                    return `${i+1}\n${fmt(start)} --> ${fmt(end)}\n${s.trim()}`;
+                  });
+                  const blob = new Blob([srtLines.join('\n\n')], {type:'text/plain;charset=utf-8'});
+                  const a = document.createElement('a');
+                  a.href = URL.createObjectURL(blob);
+                  a.download = `voice_${Date.now()}.srt`;
+                  a.click();
+                });
+                audio.load();
+              }} className="p-3 rounded-xl transition-all hover:scale-105" style={{background:'rgba(96,165,250,0.08)',border:'1px solid rgba(96,165,250,0.2)',color:'#60a5fa'}} title="Tải SRT"><span style={{fontSize:10,fontWeight:700}}>SRT</span></button>}
             </div>
           </div>
 

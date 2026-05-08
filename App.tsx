@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useAuth } from './authContext';
 import { navigate } from './router';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { Mic, Settings, Play, Square, Download, Loader2, History, Trash2, ChevronDown, Volume2, AlertCircle, Clock, X, Sparkles, Gauge, Music, Save, FolderOpen, Upload, Menu, HelpCircle, BookOpen, Key, FileText, Palette, Globe } from 'lucide-react';
+import { Mic, Settings, Play, Square, Download, Loader2, History, Trash2, ChevronDown, Volume2, AlertCircle, Clock, X, Sparkles, Gauge, Music, Save, FolderOpen, Upload, Menu, HelpCircle, BookOpen, Key, FileText, Palette, Globe, Users } from 'lucide-react';
 import { parseSrt } from './srtParser';
 import { VOICE_DATA, SUPPORTED_LANGUAGES } from './constants';
 import { VN_VOICES, VnVoice } from './vnVoices';
@@ -53,6 +53,10 @@ const App: React.FC = () => {
   const tRef = useRef<HTMLTextAreaElement>(null);
   const ctxRef = useRef<AudioContext|null>(null);
   const srcRef = useRef<AudioBufferSourceNode|null>(null);
+
+  // Dialogue mode
+  const [dialogueMode, setDialogueMode] = useState(false);
+  const [voice2, setVoice2] = useState(VN_VOICES.find(v=>v.gender==='Nam')?.name || VN_VOICES[1]?.name || '');
 
   const insertTag = (tag:string) => {
     const el=tRef.current;if(!el)return;
@@ -252,6 +256,105 @@ const App: React.FC = () => {
 
     // All keys exhausted
     setError('Tất cả API key đã hết quota. Thêm key mới hoặc đợi reset (thường 1 phút).');
+    setGenerating(false);
+  };
+
+  // === DIALOGUE MODE GENERATION ===
+  const generateDialogue = async () => {
+    if(!text.trim()) return;
+    stop(); setGenerating(true); setError(null);
+
+    // Parse [Nam] / [Nữ] lines
+    const lines = text.split('\n').filter(l=>l.trim());
+    const segments: {speaker:'nam'|'nu', text:string}[] = [];
+    let currentSpeaker: 'nam'|'nu' = 'nam';
+
+    for (const line of lines) {
+      const match = line.match(/^\[(Nam|Nữ)\]\s*:?\s*(.*)/i);
+      if (match) {
+        currentSpeaker = match[1].toLowerCase() === 'nam' ? 'nam' : 'nu';
+        if (match[2].trim()) segments.push({speaker:currentSpeaker, text:match[2].trim()});
+      } else {
+        segments.push({speaker:currentSpeaker, text:line.trim()});
+      }
+    }
+
+    if (segments.length === 0) { setGenerating(false); return; }
+
+    const ln = SUPPORTED_LANGUAGES.find(l=>l.code===tLang)?.name||'Vietnamese';
+    const allPcm: Uint8Array[] = [];
+
+    for (let si = 0; si < segments.length; si++) {
+      const seg = segments[si];
+      // Determine voice for this segment
+      const isVoice1 = seg.speaker === 'nu'; // voice 1 = current selection
+      const segVoiceName = isVoice1 ? voice : voice2;
+      const vn = VN_VOICES.find(v=>v.name===segVoiceName);
+      const geminiVoice = vn ? vn.geminiVoice : segVoiceName;
+      const sysHint = vn ? vn.systemHint : '';
+
+      const { fullText } = buildTTSPrompt({
+        audioProfile: '', voiceMode, voiceName: segVoiceName, sysHint,
+        speed, pitch, language: ln, text: seg.text,
+      });
+
+      // Try with key rotation
+      const failedKeys: string[] = [];
+      const maxKeys = loadApiKeys().length;
+      let success = false;
+
+      for (let attempt = 0; attempt < maxKeys; attempt++) {
+        const key = attempt === 0 ? getNextApiKey() : getNextApiKeyExcluding(failedKeys);
+        if (!key) break;
+        try {
+          const ai = new GoogleGenAI({apiKey: key});
+          const r = await ai.models.generateContent({
+            model: 'gemini-3.1-flash-tts-preview',
+            contents: { parts: [{ text: fullText }] },
+            config: {
+              responseModalities: [Modality.AUDIO],
+              speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: geminiVoice } } },
+            }
+          });
+          const d = r.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+          if (!d) throw new Error('Không nhận được audio đoạn ' + (si+1));
+          allPcm.push(b64d(d));
+          success = true;
+          break;
+        } catch(e: any) {
+          if (e.message?.includes('429') || e.message?.includes('RESOURCE_EXHAUSTED')) {
+            failedKeys.push(key!); continue;
+          }
+          setError(`Lỗi đoạn ${si+1}: ${e.message}`); setGenerating(false); return;
+        }
+      }
+      if (!success) {
+        setError('Hết quota ở đoạn ' + (si+1)); setGenerating(false); return;
+      }
+    }
+
+    // Concatenate all PCM segments
+    const totalLen = allPcm.reduce((a,b)=>a+b.length, 0);
+    const merged = new Uint8Array(totalLen);
+    let offset = 0;
+    for (const chunk of allPcm) { merged.set(chunk, offset); offset += chunk.length; }
+
+    // Convert to base64 for storage
+    let binary = '';
+    for (let i = 0; i < merged.length; i++) binary += String.fromCharCode(merged[i]);
+    const mergedB64 = btoa(binary);
+
+    setLastAudio(mergedB64);
+    setGens(p=>[...p,{id:crypto.randomUUID(), text:'[Đối thoại] '+text.slice(0,60)+'...', voiceName:`${voice} + ${voice2}`, audioData:mergedB64, timestamp:Date.now()}]);
+
+    // Play merged audio
+    if(!ctxRef.current||ctxRef.current.state==='closed') ctxRef.current=new AudioContext({sampleRate:24000});
+    else if(ctxRef.current.state==='suspended') await ctxRef.current.resume();
+    const i16=new Int16Array(merged.buffer), buf=ctxRef.current.createBuffer(1,i16.length,24000), ch=buf.getChannelData(0);
+    for(let x=0;x<i16.length;x++) ch[x]=i16[x]/32768;
+    const src=ctxRef.current.createBufferSource();
+    src.buffer=buf;src.connect(ctxRef.current.destination);src.start();
+    srcRef.current=src;setPlaying(true);src.onended=()=>setPlaying(false);
     setGenerating(false);
   };
 
@@ -469,9 +572,14 @@ const App: React.FC = () => {
 
             {/* AI Diễn cảm + Load Profile */}
             <div className="px-4 py-2 flex flex-wrap gap-1.5 items-center border-b" style={{borderColor:'var(--border)'}}>
-              <button onClick={analyzeEmotion} disabled={analyzing||!text.trim()} className="emotion-chip" style={{background: audioProfile ? 'rgba(16,185,129,0.2)' : 'rgba(16,185,129,0.12)',borderColor: audioProfile ? 'rgba(16,185,129,0.5)' : 'rgba(16,185,129,0.3)',color:'#34d399',fontSize:'12px',padding:'5px 14px'}}>
+              <button onClick={analyzeEmotion} disabled={analyzing||!text.trim()||dialogueMode} className="emotion-chip" style={{background: audioProfile ? 'rgba(16,185,129,0.2)' : 'rgba(16,185,129,0.12)',borderColor: audioProfile ? 'rgba(16,185,129,0.5)' : 'rgba(16,185,129,0.3)',color:'#34d399',fontSize:'12px',padding:'5px 14px'}}>
                 {analyzing?<Loader2 size={12} className="animate-spin"/>:<Sparkles size={12}/>}
                 {analyzing?'Đang phân tích...': audioProfile ? '✅ Đã phân tích' : '🎭 AI Diễn cảm'}
+              </button>
+              {/* Dialogue Mode Toggle */}
+              <button onClick={()=>setDialogueMode(!dialogueMode)} className="emotion-chip" style={{background: dialogueMode ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.08)', borderColor: dialogueMode ? 'rgba(59,130,246,0.4)' : 'rgba(59,130,246,0.2)', color: dialogueMode ? '#2563eb' : '#60a5fa', fontSize:'12px', padding:'5px 14px'}}>
+                <Users size={12}/>
+                {dialogueMode ? '✅ Đối thoại 2 giọng' : '👥 Đối thoại'}
               </button>
               {/* Load Saved Profile */}
               <div className="relative">
@@ -521,8 +629,24 @@ const App: React.FC = () => {
                 }}/>
               </div>
 
+            {/* Dialogue voice2 selector */}
+            {dialogueMode && (
+              <div className="px-4 py-2 flex items-center gap-2 border-b" style={{borderColor:'var(--border)', background:'#f0f5ff'}}>
+                <Users size={14} style={{color:'#2563eb'}}/>
+                <span className="text-[11px] font-semibold" style={{color:'#2563eb'}}>Đối thoại:</span>
+                <span className="text-[11px]" style={{color:'var(--text-secondary)'}}>🟣 Nữ = <b>{voice}</b></span>
+                <span className="text-[11px]" style={{color:'var(--text-muted)'}}>|</span>
+                <span className="text-[11px]" style={{color:'var(--text-secondary)'}}>🔵 Nam =</span>
+                <select value={voice2} onChange={e=>setVoice2(e.target.value)} className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{background:'#fff', border:'1px solid var(--border)', color:'var(--text-primary)', outline:'none'}}>
+                  {VN_VOICES.filter(v=>v.gender==='Nam').map(v=>(<option key={v.name} value={v.name}>{v.name}</option>))}
+                </select>
+              </div>
+            )}
+
             <textarea ref={tRef} value={text} onChange={e=>{setText(e.target.value);if(audioProfile){setTaggedText('')}}} className="text-editor flex-1 custom-scroll"
-              placeholder={'Dán văn bản vào đây...\n\n1. Nhấn "🎭 AI Diễn cảm" để AI tự phân tích giọng\n2. Chọn giọng hoặc để AI tự chọn\n3. Nhấn "Tạo giọng nói"'}
+              placeholder={dialogueMode
+                ? '[Nữ]: Anh ơi, hôm nay đi đâu vậy?\n[Nam]: Anh đi làm về rồi. Em ăn cơm chưa?\n[Nữ]: Chưa, đợi anh về ăn cùng.\n[Nam]: OK, anh về ngay nhé!\n\n💡 Viết [Nam] hoặc [Nữ] đầu dòng để chuyển giọng.'
+                : 'Dán văn bản vào đây...\n\n1. Nhấn "🎭 AI Diễn cảm" để AI tự phân tích giọng\n2. Chọn giọng hoặc để AI tự chọn\n3. Nhấn "Tạo giọng nói"'}
             />
 
             {/* Actions */}
@@ -530,8 +654,8 @@ const App: React.FC = () => {
               {playing?(
                 <button onClick={stop} className="btn-generate" style={{background:'#3f3f46',boxShadow:'none'}}><Square size={15} className="fill-current"/>Dừng</button>
               ):(
-                <button onClick={generate} disabled={generating||!text.trim()} className="btn-generate">
-                  {generating?<><Loader2 size={16} className="animate-spin"/>Đang tạo...</>:<><Volume2 size={16}/>Tạo giọng nói</>}
+                <button onClick={dialogueMode ? generateDialogue : generate} disabled={generating||!text.trim()} className="btn-generate">
+                  {generating?<><Loader2 size={16} className="animate-spin"/>Đang tạo{dialogueMode?' đối thoại':''}...</>:<>{dialogueMode?<Users size={16}/>:<Volume2 size={16}/>}{dialogueMode?'Tạo đối thoại':'Tạo giọng nói'}</>}
                 </button>
               )}
               {lastAudio&&<button onClick={()=>dl(lastAudio,`voice_${Date.now()}.wav`)} className="p-3 rounded-xl transition-all hover:scale-105" style={{background:'rgba(255,255,255,0.05)',border:'1px solid var(--border)',color:'var(--text-secondary)'}} title="Tải WAV"><Download size={16}/></button>}

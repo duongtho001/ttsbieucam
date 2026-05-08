@@ -422,6 +422,105 @@ select:focus { border-color: var(--accent); outline:none; }
 }
 .spotlight-card:hover::before { opacity:1; }
 
+/* ===== GUIDE / TUTORIAL SECTION ===== */
+.guide-section { padding:80px 5%;max-width:1000px;margin:0 auto; }
+.guide-steps {
+  display:grid;grid-template-columns:repeat(4, 1fr);gap:20px;
+  position:relative;
+}
+/* Connecting line */
+.guide-steps::before {
+  content:'';position:absolute;top:32px;left:10%;right:10%;height:2px;
+  background:linear-gradient(90deg, #7c3aed, #2563eb, #059669, #f472b6);
+  opacity:0.15;z-index:0;
+}
+.guide-step-card {
+  background:#ffffff;border:1px solid var(--border);border-radius:16px;
+  padding:28px 20px;text-align:center;position:relative;z-index:1;
+  transition:all 0.2s;
+}
+.guide-step-card:hover {
+  box-shadow:0 8px 24px rgba(0,0,0,0.06);transform:translateY(-3px);
+}
+.guide-step-num {
+  font-size:36px;font-weight:900;line-height:1;margin-bottom:12px;
+  opacity:0.8;
+}
+.guide-step-title {
+  font-size:15px;font-weight:700;margin-bottom:8px;color:var(--text-primary);
+}
+.guide-step-desc {
+  font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;
+}
+.guide-step-tip {
+  font-size:11px;color:var(--accent);font-weight:500;
+  padding:6px 10px;border-radius:8px;background:#faf5ff;
+  display:inline-block;line-height:1.4;
+}
+@media (max-width:768px) {
+  .guide-steps { grid-template-columns:repeat(2,1fr); }
+  .guide-steps::before { display:none; }
+}
+@media (max-width:480px) {
+  .guide-steps { grid-template-columns:1fr; }
+  .guide-step-card { padding:20px 16px; }
+  .guide-step-num { font-size:28px; }
+}
+
+/* ===== DIALOGUE SHOWCASE ===== */
+.dialogue-showcase {
+  padding:80px 5%;background:#f8faff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.dialogue-inner {
+  max-width:1000px;margin:0 auto;display:grid;
+  grid-template-columns:1fr 1fr;gap:40px;align-items:center;
+}
+.dialogue-new-badge {
+  display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;
+  background:linear-gradient(135deg,#7c3aed,#2563eb);color:white;margin-bottom:16px;
+  letter-spacing:0.04em;
+}
+.dialogue-title {
+  font-size:28px;font-weight:800;color:var(--text-primary);margin-bottom:12px;line-height:1.3;
+}
+.dialogue-desc {
+  font-size:14px;color:var(--text-secondary);line-height:1.7;margin-bottom:20px;
+}
+.dialogue-features-list {
+  list-style:none;padding:0;margin:0 0 24px;display:flex;flex-direction:column;gap:8px;
+}
+.dialogue-features-list li {
+  display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-primary);
+}
+.dialogue-features-list li svg { color:#059669;flex-shrink:0; }
+
+/* Chat preview */
+.dialogue-preview {
+  background:#ffffff;border:1px solid var(--border);border-radius:16px;
+  padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.06);
+}
+.dialogue-chat { display:flex;flex-direction:column;gap:12px; }
+.chat-bubble {
+  padding:12px 16px;border-radius:12px;position:relative;
+}
+.chat-bubble p { font-size:13px;color:var(--text-primary);margin:0;line-height:1.5; }
+.chat-speaker { font-size:10px;font-weight:700;display:block;margin-bottom:2px; }
+.chat-lang { font-size:9px;color:var(--text-muted);display:block;margin-bottom:4px; }
+.chat-a {
+  background:#faf5ff;border:1px solid rgba(124,58,237,0.12);
+  border-radius:12px 12px 12px 4px;margin-right:30px;
+}
+.chat-b {
+  background:#eff6ff;border:1px solid rgba(37,99,235,0.12);
+  border-radius:12px 12px 4px 12px;margin-left:30px;
+}
+@media (max-width:768px) {
+  .dialogue-inner { grid-template-columns:1fr;gap:24px; }
+  .dialogue-title { font-size:22px; }
+  .chat-a { margin-right:10px; }
+  .chat-b { margin-left:10px; }
+}
+
 /* ===== PRICING SECTION ===== */
 .pricing-section { padding:80px 5%;max-width:800px;margin:0 auto; }
 .pricing-grid {

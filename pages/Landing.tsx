@@ -9,7 +9,7 @@ import {
   Mic, Sparkles, Upload, Globe, ChevronRight, MessageCircle,
   Film, BookOpen, ShoppingCart, Radio, Volume2,
   DollarSign, Check, X as XIcon, ChevronDown, Star,
-  ArrowRight, Headphones, FileText, Zap, Shield, Infinity, Crown
+  ArrowRight, Headphones, FileText, Zap, Shield, Infinity, Crown, Users
 } from 'lucide-react';
 
 /* ─── Data ─── */
@@ -129,6 +129,52 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ===== NEW FEATURE: DIALOGUE MODE SHOWCASE ===== */}
+      <section className="dialogue-showcase">
+        <div className="dialogue-inner">
+          <div className="dialogue-info">
+            <span className="dialogue-new-badge">🆕 TÍNH NĂNG MỚI</span>
+            <h2 className="dialogue-title">Đối thoại 2 giọng — Đa ngôn ngữ</h2>
+            <p className="dialogue-desc">
+              Tạo hội thoại giữa 2 nhân vật với giọng khác nhau. Kết hợp giọng Việt Nam và Quốc tế trong cùng 1 đoạn audio.
+            </p>
+            <ul className="dialogue-features-list">
+              <li><Check size={14}/> Chọn <strong>bất kỳ giọng</strong> cho Speaker A & B</li>
+              <li><Check size={14}/> Mỗi giọng nói <strong>ngôn ngữ riêng</strong> (VD: Việt + Anh)</li>
+              <li><Check size={14}/> Hệ thống <strong>tự ghép audio</strong> thành 1 file hoàn chỉnh</li>
+              <li><Check size={14}/> Phù hợp <strong>podcast, phỏng vấn, kịch bản</strong></li>
+            </ul>
+            <button onClick={goStudio} className="btn-cta" style={{maxWidth:280}}>
+              <Users size={16}/> Thử Đối thoại ngay
+            </button>
+          </div>
+          <div className="dialogue-preview">
+            <div className="dialogue-chat">
+              <div className="chat-bubble chat-a">
+                <span className="chat-speaker" style={{color:'#7c3aed'}}>A · Thảo Vy</span>
+                <span className="chat-lang">🇻🇳 Tiếng Việt</span>
+                <p>Xin chào! Bạn có khỏe không?</p>
+              </div>
+              <div className="chat-bubble chat-b">
+                <span className="chat-speaker" style={{color:'#2563eb'}}>B · Kore</span>
+                <span className="chat-lang">🇺🇸 English</span>
+                <p>Hello! I'm doing great, thank you!</p>
+              </div>
+              <div className="chat-bubble chat-a">
+                <span className="chat-speaker" style={{color:'#7c3aed'}}>A · Thảo Vy</span>
+                <span className="chat-lang">🇻🇳 Tiếng Việt</span>
+                <p>Hôm nay thời tiết đẹp quá nhỉ!</p>
+              </div>
+              <div className="chat-bubble chat-b">
+                <span className="chat-speaker" style={{color:'#2563eb'}}>B · Kore</span>
+                <span className="chat-lang">🇺🇸 English</span>
+                <p>Yes, it's a beautiful day indeed.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ===== S3: COMPARE TABLE ===== */}
       <section className="compare-section">
         <h2 className="section-title">💰 Tại sao chọn Voice Studio?</h2>
@@ -152,6 +198,56 @@ export default function Landing() {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* ===== S3.5: HƯỚNG DẪN SỬ DỤNG ===== */}
+      <section className="guide-section">
+        <h2 className="section-title">📖 Hướng dẫn sử dụng</h2>
+        <p className="section-subtitle">Chỉ 4 bước đơn giản — Từ zero đến có giọng đọc chuyên nghiệp.</p>
+        <div className="guide-steps">
+          {[
+            {
+              step: '01',
+              color: '#7c3aed',
+              title: 'Lấy API Key (miễn phí)',
+              desc: 'Truy cập aistudio.google.com/apikey → đăng nhập Google → nhấn "Create API Key" → copy.',
+              tip: '💡 Mỗi key miễn phí. Thêm 3-5 key để dùng không giới hạn.',
+            },
+            {
+              step: '02',
+              color: '#2563eb',
+              title: 'Dán API Key vào Studio',
+              desc: 'Nhấn nút "API Keys" góc phải trên → dán key vào → nhấn Lưu. Xong!',
+              tip: '💡 Key được lưu trên trình duyệt, không ai xem được.',
+            },
+            {
+              step: '03',
+              color: '#059669',
+              title: 'Chọn giọng & nhập văn bản',
+              desc: 'Chọn giọng từ 30+ giọng VN hoặc 40+ ngôn ngữ quốc tế. Dán văn bản hoặc upload file SRT/TXT.',
+              tip: '💡 Nhấn "AI Diễn cảm" để AI tự thêm biểu cảm vào giọng đọc.',
+            },
+            {
+              step: '04',
+              color: '#f472b6',
+              title: 'Tạo & Tải về',
+              desc: 'Nhấn "Tạo giọng nói" → nghe thử → tải file WAV về máy. Dùng cho video, podcast, sách nói!',
+              tip: '💡 Dùng chế độ "Đối thoại" để tạo hội thoại 2 giọng đa ngôn ngữ.',
+            },
+          ].map((s, i) => (
+            <div key={i} className="guide-step-card">
+              <div className="guide-step-num" style={{color: s.color}}>{s.step}</div>
+              <h3 className="guide-step-title">{s.title}</h3>
+              <p className="guide-step-desc">{s.desc}</p>
+              <div className="guide-step-tip">{s.tip}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{textAlign:'center', marginTop:32}}>
+          <button onClick={goStudio} className="btn-cta">
+            <Sparkles size={16}/> Bắt đầu ngay — Miễn phí
+          </button>
         </div>
       </section>
 

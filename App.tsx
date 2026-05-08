@@ -865,7 +865,24 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Step 6 */}
+              {/* Step 6 — NEW: Dialogue Mode */}
+              <div className="flex gap-4">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#dbeafe'}}><Users size={16} style={{color:'#2563eb'}}/></div>
+                <div>
+                  <h3 className="text-sm font-bold mb-1" style={{color:'var(--text-primary)'}}>Bước 6: Chế độ Đối thoại 2 giọng 🆕</h3>
+                  <p className="text-xs leading-relaxed" style={{color:'var(--text-secondary)'}}>
+                    Nhấn nút <b>"👥 Đối thoại"</b> trên thanh công cụ để bật chế độ hội thoại.<br/>
+                    • <b>Giọng A</b> và <b>Giọng B</b>: Chọn bất kỳ giọng VN hoặc Quốc tế.<br/>
+                    • <b>Đa ngôn ngữ</b>: Mỗi giọng có thể nói ngôn ngữ riêng (VD: A nói tiếng Việt, B nói tiếng Anh).<br/>
+                    • Viết kịch bản dạng:<br/>
+                    <code style={{background:'#f5f5f5',padding:'2px 6px',borderRadius:4,fontSize:11}}>[A]: Xin chào!  [B]: Hello!</code><br/>
+                    • Nhấn <b>"Tạo đối thoại"</b> → hệ thống ghép audio tất cả lượt thoại thành 1 file.<br/>
+                    • Hỗ trợ cả tag <b>[Nam]/[Nữ]</b> tương đương <b>[B]/[A]</b>.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 7 — Tips */}
               <div className="flex gap-4">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'#f5f3ff'}}><Palette size={16} style={{color:'#7c3aed'}}/></div>
                 <div>
@@ -875,6 +892,7 @@ const App: React.FC = () => {
                     • Chọn <b>Ngôn ngữ phát âm</b> phù hợp (sidebar bên trái) trước khi tạo.<br/>
                     • Điều chỉnh <b>Tốc độ</b> và <b>Cao độ</b> cho giọng tự nhiên hơn.<br/>
                     • Lưu <b>Profile giọng</b> yêu thích để tái sử dụng nhanh.<br/>
+                    • <b>Đối thoại</b>: Kết hợp giọng VN + Quốc tế trong cùng 1 đoạn hội thoại.<br/>
                     • Với SRT: Dịch trước → kiểm tra → tạo audio.
                   </p>
                 </div>

@@ -2,7 +2,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useAuth } from './authContext';
 import { navigate } from './router';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { Mic, Settings, Play, Square, Download, Loader2, History, Trash2, ChevronDown, Volume2, AlertCircle, Clock, X, Sparkles, Gauge, Music, Save, FolderOpen } from 'lucide-react';
+import { Mic, Settings, Play, Square, Download, Loader2, History, Trash2, ChevronDown, Volume2, AlertCircle, Clock, X, Sparkles, Gauge, Music, Save, FolderOpen, Upload, Menu } from 'lucide-react';
+import { parseSrt } from './srtParser';
 import { VOICE_DATA, SUPPORTED_LANGUAGES } from './constants';
 import { VN_VOICES, VnVoice } from './vnVoices';
 import { Generation } from './types';
@@ -26,6 +27,8 @@ const App: React.FC = () => {
   const logout = auth?.logout || (() => {});
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [keyCount, setKeyCount] = useState(()=>loadApiKeys().length);
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('vietnamese');
   const [voice, setVoice] = useState(VN_VOICES[0].name);
@@ -262,14 +265,14 @@ const App: React.FC = () => {
       <div className="ambient-glow"/>
 
       {/* Header */}
-      <header className="relative z-50 flex items-center justify-between px-5 h-14 border-b" style={{borderColor:'var(--border)',background:'rgba(255,255,255,0.05)',backdropFilter:'blur(20px)'}}>
+      <header className="studio-header relative z-50 flex items-center justify-between px-5 h-14 border-b" style={{borderColor:'var(--border)',background:'rgba(255,255,255,0.05)',backdropFilter:'blur(20px)'}}>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'linear-gradient(135deg,#7c3aed,#6366f1)',boxShadow:'0 2px 12px rgba(124,58,237,0.4)'}}>
             <Mic size={15} color="white"/>
           </div>
-          <span className="text-sm font-bold tracking-tight text-white">Voice Studio</span>
+          <span className="logo-text text-sm font-bold tracking-tight text-white">Voice Studio</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="header-btns flex items-center gap-2">
           <button onClick={()=>setShowHistory(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" style={{background:gens.length?'rgba(139,92,246,0.15)':'rgba(255,255,255,0.05)',border:`1px solid ${gens.length?'rgba(139,92,246,0.3)':'var(--border)'}`,color:gens.length?'#a78bfa':'var(--text-secondary)'}}>
             <History size={13}/><span>Lịch sử</span>
             {gens.length>0&&<span className="w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center" style={{background:'#7c3aed',color:'white'}}>{gens.length}</span>}
@@ -292,10 +295,16 @@ const App: React.FC = () => {
       </header>
 
       {/* Main */}
-      <main className="relative z-10 flex-1 flex overflow-hidden">
+      <main className="studio-main relative z-10 flex-1 flex overflow-hidden">
+
+        {/* Mobile sidebar toggle */}
+        <div className="mobile-sidebar-toggle" onClick={()=>setSidebarOpen(!sidebarOpen)}>
+          <Menu size={14} style={{display:'inline',marginRight:6,verticalAlign:'middle'}}/>
+          {sidebarOpen ? '▲ Ẩn giọng đọc' : '▼ Chọn giọng đọc'}
+        </div>
 
         {/* LEFT PANEL */}
-        <aside className="w-[300px] shrink-0 border-r flex flex-col overflow-hidden" style={{borderColor:'var(--border)',background:'rgba(255,255,255,0.04)'}}>
+        <aside className={`studio-sidebar w-[300px] shrink-0 border-r flex flex-col overflow-hidden ${sidebarOpen?'expanded':'collapsed'}`} style={{borderColor:'var(--border)',background:'rgba(255,255,255,0.04)'}}>
           {/* Voice Mode Toggle */}
           <div className="p-4 border-b" style={{borderColor:'var(--border)'}}>
             <div className="flex gap-1 mb-3 p-1 rounded-xl" style={{background:'rgba(255,255,255,0.06)'}}>
@@ -367,7 +376,7 @@ const App: React.FC = () => {
         </aside>
 
         {/* RIGHT PANEL */}
-        <section className="flex-1 flex flex-col overflow-hidden p-5 gap-4">
+        <section className="studio-right flex-1 flex flex-col overflow-hidden p-5 gap-4">
           {/* Voice badge */}
           <div className="flex items-center gap-3 glass-panel px-4 py-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'rgba(139,92,246,0.15)'}}>
@@ -470,6 +479,27 @@ const App: React.FC = () => {
                 )}
               </div>
             </div>
+              {/* Upload SRT/TXT */}
+              <div className="file-upload-wrap">
+                <span className="btn-file-upload"><Upload size={11}/>📄 Tải SRT/TXT</span>
+                <input ref={fileInputRef} type="file" accept=".srt,.txt" onChange={(e)=>{
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const content = ev.target?.result as string;
+                    if (file.name.endsWith('.srt')) {
+                      const entries = parseSrt(content);
+                      setText(entries.map(e => e.text).join('\n\n'));
+                    } else {
+                      setText(content);
+                    }
+                    if (audioProfile) setTaggedText('');
+                  };
+                  reader.readAsText(file, 'utf-8');
+                  e.target.value = '';
+                }}/>
+              </div>
 
             <textarea ref={tRef} value={text} onChange={e=>{setText(e.target.value);if(audioProfile){setTaggedText('')}}} className="text-editor flex-1 custom-scroll"
               placeholder={'Dán văn bản vào đây...\n\n1. Nhấn "🎭 AI Diễn cảm" để AI tự phân tích giọng\n2. Chọn giọng hoặc để AI tự chọn\n3. Nhấn "Tạo giọng nói"'}

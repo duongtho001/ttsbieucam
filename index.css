@@ -436,6 +436,28 @@ body {
   color:#34d399;white-space:pre-wrap;line-height:1.7;overflow-x:auto;
 }
 
+/* ===== FILE UPLOAD BUTTON ===== */
+.file-upload-wrap {
+  position:relative;overflow:hidden;display:inline-flex;
+}
+.file-upload-wrap input[type="file"] {
+  position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;
+}
+.btn-file-upload {
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:10px;font-size:12px;font-weight:600;
+  background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.25);
+  color:#60a5fa;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.btn-file-upload:hover { background:rgba(96,165,250,0.2); }
+
+/* ===== MOBILE SIDEBAR TOGGLE ===== */
+.mobile-sidebar-toggle {
+  display:none;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:700;
+  background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);
+  color:#a78bfa;cursor:pointer;width:100%;text-align:center;
+}
+
 /* ===== RESPONSIVE — TABLET (≤1024px) ===== */
 @media (max-width:1024px) {
   .hero-title { font-size:clamp(28px,4vw,48px); }
@@ -475,35 +497,46 @@ body {
   .admin-input { font-size:14px; }
   .admin-sql { font-size:11px;padding:12px; }
 
-  /* --- Studio Header --- */
-  header .flex.items-center.gap-2 { gap:4px;flex-wrap:wrap; }
-  header .flex.items-center.gap-2 button span { display:none; }
-  header .flex.items-center.gap-2 button { padding:6px 8px; }
+  /* --- Studio Header: compact icons --- */
+  .studio-header { padding:0 10px !important;height:48px !important; }
+  .studio-header .logo-text { display:none; }
+  .studio-header .header-btns { gap:3px; }
+  .studio-header .header-btns button { padding:6px 8px; }
+  .studio-header .header-btns button span { display:none; }
 
-  /* --- Studio Layout: sidebar collapses to top bar --- */
-  main.flex { flex-direction:column !important; }
-  aside.w-\[300px\] {
+  /* --- Studio: Sidebar toggle & collapse --- */
+  .mobile-sidebar-toggle { display:block; }
+  .studio-main { flex-direction:column !important; }
+  .studio-sidebar {
     width:100% !important;
-    max-height:200px;
     border-right:none !important;
     border-bottom:1px solid var(--border);
-    overflow-y:auto;
+    overflow:hidden;
+    transition:max-height 0.3s ease;
   }
-  aside .p-4 { padding:10px 12px !important; }
-  aside .voice-card { padding:6px 10px; }
-  aside .voice-card .text-xs { font-size:10px; }
+  .studio-sidebar.collapsed { max-height:0;border-bottom:none; }
+  .studio-sidebar.expanded { max-height:300px;overflow-y:auto; }
+  .studio-sidebar .p-4 { padding:8px 10px !important; }
+  .studio-sidebar .voice-card { padding:6px 8px; }
+  .studio-sidebar .voice-card .text-xs { font-size:9px; }
+  .studio-sidebar .voice-card .text-sm { font-size:12px; }
+
+  /* --- Studio: Right panel compact --- */
+  .studio-right { padding:10px !important;gap:8px !important; }
+  .studio-right .glass-panel { border-radius:12px; }
+  .studio-right .px-4 { padding-left:10px !important;padding-right:10px !important; }
 
   /* --- Text Editor --- */
-  .text-editor { min-height:120px;max-height:200px;font-size:14px;padding:12px; }
+  .text-editor { min-height:100px;font-size:14px;padding:10px;line-height:1.5; }
 
   /* --- Generate Button --- */
-  .btn-generate { padding:12px;font-size:14px;border-radius:12px; }
+  .btn-generate { padding:10px;font-size:13px;border-radius:10px; }
 
-  /* --- Player --- */
-  .player-area { height:70px; }
+  /* --- Player compact --- */
+  .player-area { height:60px; }
 
-  /* --- Glass panel spacing --- */
-  .glass-panel { border-radius:14px; }
+  /* --- Emotion chips wrap --- */
+  .emotion-chip { font-size:11px;padding:4px 10px; }
 }
 
 /* ===== RESPONSIVE — SMALL PHONES (≤480px) ===== */
@@ -516,8 +549,10 @@ body {
   .feature-desc { font-size:12px; }
   .auth-card { padding:24px 16px; }
   .auth-title { font-size:18px; }
-  header { padding-left:12px !important;padding-right:12px !important;height:48px !important; }
-  header .text-sm { font-size:12px; }
-  aside.w-\[300px\] { max-height:160px; }
+  .studio-header { height:44px !important; }
+  .studio-sidebar.expanded { max-height:220px; }
+  .text-editor { min-height:80px;font-size:13px; }
+  .btn-generate { padding:9px;font-size:12px; }
+  .player-area { height:50px; }
   .emotion-chip { font-size:10px;padding:3px 8px; }
 }

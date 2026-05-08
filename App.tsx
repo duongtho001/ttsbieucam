@@ -56,7 +56,9 @@ const App: React.FC = () => {
 
   // Dialogue mode
   const [dialogueMode, setDialogueMode] = useState(false);
-  const [voice2, setVoice2] = useState(VN_VOICES.find(v=>v.gender==='Nam')?.name || VN_VOICES[1]?.name || '');
+  const [voice2, setVoice2] = useState(VOICE_DATA[0]?.name || 'Kore');
+  const [voice2Mode, setVoice2Mode] = useState<VoiceMode>('vietnamese');
+  const [tLang2, setTLang2] = useState('en-US');
 
   const insertTag = (tag:string) => {
     const el=tRef.current;if(!el)return;
@@ -264,15 +266,16 @@ const App: React.FC = () => {
     if(!text.trim()) return;
     stop(); setGenerating(true); setError(null);
 
-    // Parse [Nam] / [Nữ] lines
+    // Parse [A] / [B] lines (also supports [Nam]/[Nữ] for backward compat)
     const lines = text.split('\n').filter(l=>l.trim());
-    const segments: {speaker:'nam'|'nu', text:string}[] = [];
-    let currentSpeaker: 'nam'|'nu' = 'nam';
+    const segments: {speaker:'a'|'b', text:string}[] = [];
+    let currentSpeaker: 'a'|'b' = 'a';
 
     for (const line of lines) {
-      const match = line.match(/^\[(Nam|Nữ)\]\s*:?\s*(.*)/i);
+      const match = line.match(/^\[(A|B|Nam|Nữ)\]\s*:?\s*(.*)/i);
       if (match) {
-        currentSpeaker = match[1].toLowerCase() === 'nam' ? 'nam' : 'nu';
+        const tag = match[1].toUpperCase();
+        currentSpeaker = (tag === 'A' || tag === 'NỮ') ? 'a' : 'b';
         if (match[2].trim()) segments.push({speaker:currentSpeaker, text:match[2].trim()});
       } else {
         segments.push({speaker:currentSpeaker, text:line.trim()});
@@ -281,21 +284,26 @@ const App: React.FC = () => {
 
     if (segments.length === 0) { setGenerating(false); return; }
 
-    const ln = SUPPORTED_LANGUAGES.find(l=>l.code===tLang)?.name||'Vietnamese';
+    const lnA = SUPPORTED_LANGUAGES.find(l=>l.code===tLang)?.name||'Vietnamese';
+    const lnB = SUPPORTED_LANGUAGES.find(l=>l.code===tLang2)?.name||'English';
     const allPcm: Uint8Array[] = [];
 
     for (let si = 0; si < segments.length; si++) {
       const seg = segments[si];
-      // Determine voice for this segment
-      const isVoice1 = seg.speaker === 'nu'; // voice 1 = current selection
-      const segVoiceName = isVoice1 ? voice : voice2;
+      const isA = seg.speaker === 'a';
+      const segVoiceName = isA ? voice : voice2;
+      const segVoiceMode = isA ? voiceMode : voice2Mode;
+      const segLang = isA ? lnA : lnB;
+
+      // Resolve voice
       const vn = VN_VOICES.find(v=>v.name===segVoiceName);
-      const geminiVoice = vn ? vn.geminiVoice : segVoiceName;
+      const intl = VOICE_DATA.find(v=>v.name===segVoiceName);
+      const geminiVoice = vn ? vn.geminiVoice : (intl ? intl.name : segVoiceName);
       const sysHint = vn ? vn.systemHint : '';
 
       const { fullText } = buildTTSPrompt({
-        audioProfile: '', voiceMode, voiceName: segVoiceName, sysHint,
-        speed, pitch, language: ln, text: seg.text,
+        audioProfile: '', voiceMode: segVoiceMode, voiceName: segVoiceName, sysHint,
+        speed, pitch, language: segLang, text: seg.text,
       });
 
       // Try with key rotation
@@ -629,23 +637,45 @@ const App: React.FC = () => {
                 }}/>
               </div>
 
-            {/* Dialogue voice2 selector */}
+            {/* Dialogue voice selectors */}
             {dialogueMode && (
-              <div className="px-4 py-2 flex items-center gap-2 border-b" style={{borderColor:'var(--border)', background:'#f0f5ff'}}>
-                <Users size={14} style={{color:'#2563eb'}}/>
-                <span className="text-[11px] font-semibold" style={{color:'#2563eb'}}>Đối thoại:</span>
-                <span className="text-[11px]" style={{color:'var(--text-secondary)'}}>🟣 Nữ = <b>{voice}</b></span>
-                <span className="text-[11px]" style={{color:'var(--text-muted)'}}>|</span>
-                <span className="text-[11px]" style={{color:'var(--text-secondary)'}}>🔵 Nam =</span>
-                <select value={voice2} onChange={e=>setVoice2(e.target.value)} className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{background:'#fff', border:'1px solid var(--border)', color:'var(--text-primary)', outline:'none'}}>
-                  {VN_VOICES.filter(v=>v.gender==='Nam').map(v=>(<option key={v.name} value={v.name}>{v.name}</option>))}
-                </select>
+              <div className="px-4 py-2.5 flex flex-col gap-2 border-b" style={{borderColor:'var(--border)', background:'#f8faff'}}>
+                {/* Speaker A */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded" style={{background:'#ede9fe',color:'#7c3aed'}}>A</span>
+                  <select value={voice} onChange={e=>setVoice(e.target.value)} className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-1 min-w-0" style={{background:'#fff', border:'1px solid var(--border)', color:'var(--text-primary)', outline:'none', maxWidth:160}}>
+                    <optgroup label="🇻🇳 Giọng Việt Nam">
+                      {VN_VOICES.map(v=>(<option key={v.name} value={v.name}>{v.name} ({v.gender})</option>))}
+                    </optgroup>
+                    <optgroup label="🌍 Quốc tế">
+                      {VOICE_DATA.map(v=>(<option key={v.name} value={v.name}>{v.name} ({v.analysis.gender})</option>))}
+                    </optgroup>
+                  </select>
+                  <select value={tLang} onChange={e=>setTLang(e.target.value)} className="text-[10px] px-1.5 py-1 rounded-lg" style={{background:'#fff', border:'1px solid var(--border)', color:'var(--text-secondary)', outline:'none'}}>
+                    {SUPPORTED_LANGUAGES.map(l=>(<option key={l.code} value={l.code}>{l.flag} {l.name}</option>))}
+                  </select>
+                </div>
+                {/* Speaker B */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded" style={{background:'#dbeafe',color:'#2563eb'}}>B</span>
+                  <select value={voice2} onChange={e=>{setVoice2(e.target.value); const isVn=VN_VOICES.some(v=>v.name===e.target.value); setVoice2Mode(isVn?'vietnamese':'international');}} className="text-[11px] font-semibold px-2 py-1 rounded-lg flex-1 min-w-0" style={{background:'#fff', border:'1px solid var(--border)', color:'var(--text-primary)', outline:'none', maxWidth:160}}>
+                    <optgroup label="🇻🇳 Giọng Việt Nam">
+                      {VN_VOICES.map(v=>(<option key={v.name} value={v.name}>{v.name} ({v.gender})</option>))}
+                    </optgroup>
+                    <optgroup label="🌍 Quốc tế">
+                      {VOICE_DATA.map(v=>(<option key={v.name} value={v.name}>{v.name} ({v.analysis.gender})</option>))}
+                    </optgroup>
+                  </select>
+                  <select value={tLang2} onChange={e=>setTLang2(e.target.value)} className="text-[10px] px-1.5 py-1 rounded-lg" style={{background:'#fff', border:'1px solid var(--border)', color:'var(--text-secondary)', outline:'none'}}>
+                    {SUPPORTED_LANGUAGES.map(l=>(<option key={l.code} value={l.code}>{l.flag} {l.name}</option>))}
+                  </select>
+                </div>
               </div>
             )}
 
             <textarea ref={tRef} value={text} onChange={e=>{setText(e.target.value);if(audioProfile){setTaggedText('')}}} className="text-editor flex-1 custom-scroll"
               placeholder={dialogueMode
-                ? '[Nữ]: Anh ơi, hôm nay đi đâu vậy?\n[Nam]: Anh đi làm về rồi. Em ăn cơm chưa?\n[Nữ]: Chưa, đợi anh về ăn cùng.\n[Nam]: OK, anh về ngay nhé!\n\n💡 Viết [Nam] hoặc [Nữ] đầu dòng để chuyển giọng.'
+                ? '[A]: Xin chào, bạn khỏe không?\n[B]: Hello! I am fine, thank you.\n[A]: Hôm nay thời tiết đẹp quá!\n[B]: Yes, it is a beautiful day.\n\n💡 Viết [A] hoặc [B] đầu dòng để chuyển giọng.\nHỗ trợ [Nam]/[Nữ] tương đương [B]/[A].'
                 : 'Dán văn bản vào đây...\n\n1. Nhấn "🎭 AI Diễn cảm" để AI tự phân tích giọng\n2. Chọn giọng hoặc để AI tự chọn\n3. Nhấn "Tạo giọng nói"'}
             />
 

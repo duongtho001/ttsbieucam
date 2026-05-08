@@ -13,6 +13,7 @@ import AudioVisualizer from './components/AudioVisualizer';
 import { buildTTSPrompt } from './promptBuilder';
 import { getVoiceCatalogText } from './voiceCatalog';
 import { SavedProfile, loadSavedProfiles, saveProfile, deleteProfile } from './profileManager';
+import SrtPanel from './components/SrtPanel';
 
 const TAGS = ['excitedly','whispers','shouting','sighs','laughs','gasp','amazed','curious','sarcastic','serious','panicked','cheerfully','sadly'];
 
@@ -30,6 +31,7 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [keyCount, setKeyCount] = useState(()=>loadApiKeys().length);
+  const [studioTab, setStudioTab] = useState<'text'|'srt'>('text');
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('vietnamese');
   const [voice, setVoice] = useState(VN_VOICES[0].name);
   const [tLang, setTLang] = useState('vi');
@@ -311,17 +313,28 @@ const App: React.FC = () => {
               <button onClick={()=>{setVoiceMode('vietnamese');setVoice(VN_VOICES[0].name)}} className={`pill-btn flex-1 ${voiceMode==='vietnamese'?'active':''}`}>🇻🇳 Giọng VN</button>
               <button onClick={()=>{setVoiceMode('international');setVoice(VOICE_DATA[0].name)}} className={`pill-btn flex-1 ${voiceMode==='international'?'active':''}`}>🌍 Quốc tế</button>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 mb-2">
               {['All','Female','Male'].map(g=>(
                 <button key={g} onClick={()=>setGFilter(g)} className={`pill-btn flex-1 ${gFilter===g?'active':''}`} style={{fontSize:'10px',padding:'4px 8px'}}>
                   {g==='All'?'Tất cả':g==='Female'?'Nữ':'Nam'}
                 </button>
               ))}
             </div>
+            {/* Mobile voice dropdown — shown only on mobile via CSS */}
+            <div className="mobile-voice-select">
+              <select value={voice} onChange={e=>setVoice(e.target.value)}
+                className="w-full rounded-lg px-3 py-2 text-xs font-medium text-white appearance-none cursor-pointer outline-none"
+                style={{background:'rgba(255,255,255,0.08)',border:'1px solid var(--border)'}}>
+                {voiceMode==='vietnamese'
+                  ? vnVoices.map(v=><option key={v.name} value={v.name} style={{background:'#18181b'}}>{v.name} — {v.gender}</option>)
+                  : intlVoices.map(v=><option key={v.name} value={v.name} style={{background:'#18181b'}}>{v.name} — {v.analysis.gender}</option>)
+                }
+              </select>
+            </div>
           </div>
 
-          {/* Voice List */}
-          <div className="flex-1 overflow-y-auto custom-scroll p-3 space-y-1">
+          {/* Voice List — hidden on mobile, shown on desktop */}
+          <div className="desktop-voice-list flex-1 overflow-y-auto custom-scroll p-3 space-y-1">
             {voiceMode==='vietnamese' ? vnVoices.map(v=>(
               <div key={v.name} onClick={()=>setVoice(v.name)} className={`voice-card ${voice===v.name?'active':''}`}>
                 <div className="flex items-center justify-between mb-1">
@@ -345,8 +358,8 @@ const App: React.FC = () => {
             ))}
           </div>
 
-          {/* Language + Speed + Pitch */}
-          <div className="p-4 border-t space-y-3" style={{borderColor:'var(--border)'}}>
+          {/* Language + Speed + Pitch — hidden on mobile */}
+          <div className="sidebar-settings-extra p-4 border-t space-y-3" style={{borderColor:'var(--border)'}}>
             <div>
               <label className="text-[10px] font-bold uppercase tracking-[0.12em] block mb-1.5" style={{color:'var(--text-muted)'}}>Ngôn ngữ phát âm</label>
               <div className="relative">
@@ -377,6 +390,16 @@ const App: React.FC = () => {
 
         {/* RIGHT PANEL */}
         <section className="studio-right flex-1 flex flex-col overflow-hidden p-5 gap-4">
+          {/* Tab Toggle: Text vs SRT */}
+          <div className="flex gap-1 p-1 rounded-xl shrink-0" style={{background:'rgba(255,255,255,0.06)'}}>
+            <button onClick={()=>setStudioTab('text')} className={`pill-btn flex-1 ${studioTab==='text'?'active':''}`}>✏️ Văn bản</button>
+            <button onClick={()=>setStudioTab('srt')} className={`pill-btn flex-1 ${studioTab==='srt'?'active':''}`}>📄 SRT / File</button>
+          </div>
+
+          {studioTab === 'srt' ? (
+            <SrtPanel voiceName={voice} voiceMode={voiceMode} lang={tLang}/>
+          ) : (
+          <>
           {/* Voice badge */}
           <div className="flex items-center gap-3 glass-panel px-4 py-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{background:'rgba(139,92,246,0.15)'}}>
@@ -393,13 +416,13 @@ const App: React.FC = () => {
             )}
           </div>
 
-          {/* Audio Profile Panel (AI generated) */}
+          {/* Audio Profile Panel — compact, no raw text shown */}
           {audioProfile && (
             <div className="glass-panel overflow-hidden" style={{borderColor:'rgba(16,185,129,0.2)'}}>
-              <div onClick={()=>setShowProfile(!showProfile)} className="w-full px-4 py-2.5 flex items-center justify-between cursor-pointer" style={{background:'rgba(16,185,129,0.06)'}}>
+              <div className="w-full px-4 py-2.5 flex items-center justify-between" style={{background:'rgba(16,185,129,0.06)'}}>
                 <div className="flex items-center gap-2">
                   <Sparkles size={13} style={{color:'#34d399'}}/>
-                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{color:'#34d399'}}>Audio Profile</span>
+                  <span className="text-[11px] font-bold" style={{color:'#34d399'}}>✅ Phong cách giọng đã sẵn sàng</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded" style={{background:'rgba(16,185,129,0.15)',color:'#6ee7b7'}}>
                     {audioProfile.match(/# AUDIO PROFILE:\s*(.+)/)?.[1] || 'AI Generated'}
                   </span>
@@ -423,20 +446,13 @@ const App: React.FC = () => {
                     saveProfile(p);
                     setSavedProfiles(loadSavedProfiles());
                     setError(null);
-                    // Flash success
                     const btn = e.currentTarget;
                     btn.textContent = '✅ Đã lưu!';
                     setTimeout(() => { btn.innerHTML = ''; }, 1500);
                   }} className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded transition-colors" style={{color:'#34d399',background:'rgba(16,185,129,0.1)'}} title="Lưu profile để dùng lại"><Save size={10}/>Lưu</button>
-                  <button onClick={(e)=>{e.stopPropagation();setAudioProfile('');setTaggedText('');setShowProfile(false)}} className="text-[10px] px-2 py-0.5 rounded hover:bg-red-500/20 transition-colors" style={{color:'var(--text-muted)'}}>Xóa</button>
-                  <ChevronDown size={13} style={{color:'var(--text-muted)',transform:showProfile?'rotate(180deg)':'none',transition:'transform 0.2s'}}/>
+                  <button onClick={()=>{setAudioProfile('');setTaggedText('');setShowProfile(false)}} className="text-[10px] px-2 py-0.5 rounded hover:bg-red-500/20 transition-colors" style={{color:'var(--text-muted)'}}>Xóa</button>
                 </div>
               </div>
-              {showProfile && (
-                <div className="px-4 py-3 border-t max-h-48 overflow-y-auto custom-scroll" style={{borderColor:'var(--border)'}}>
-                  <pre className="text-[11px] leading-relaxed whitespace-pre-wrap font-sans" style={{color:'var(--text-secondary)'}}>{audioProfile}</pre>
-                </div>
-              )}
             </div>
           )}
 
@@ -528,6 +544,8 @@ const App: React.FC = () => {
               {playing&&<div className="flex gap-[3px] items-end">{[0,1,2].map(i=><div key={i} className="playing-bar" style={{animationDelay:`${i*0.15}s`}}/>)}</div>}
             </div>
           </div>
+          </>
+          )}
         </section>
       </main>
 

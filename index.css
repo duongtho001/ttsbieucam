@@ -458,6 +458,9 @@ body {
   color:#a78bfa;cursor:pointer;width:100%;text-align:center;
 }
 
+/* Desktop: hide mobile-only elements */
+.mobile-voice-select { display:none; }
+
 /* ===== RESPONSIVE — TABLET (≤1024px) ===== */
 @media (max-width:1024px) {
   .hero-title { font-size:clamp(28px,4vw,48px); }
@@ -515,11 +518,13 @@ body {
     transition:max-height 0.3s ease;
   }
   .studio-sidebar.collapsed { max-height:0;border-bottom:none; }
-  .studio-sidebar.expanded { max-height:300px;overflow-y:auto; }
+  .studio-sidebar.expanded { max-height:180px;overflow-y:auto; }
   .studio-sidebar .p-4 { padding:8px 10px !important; }
-  .studio-sidebar .voice-card { padding:6px 8px; }
-  .studio-sidebar .voice-card .text-xs { font-size:9px; }
-  .studio-sidebar .voice-card .text-sm { font-size:12px; }
+
+  /* Mobile: show dropdown, hide card list + settings */
+  .mobile-voice-select { display:block; }
+  .desktop-voice-list { display:none !important; }
+  .sidebar-settings-extra { display:none !important; }
 
   /* --- Studio: Right panel compact --- */
   .studio-right { padding:10px !important;gap:8px !important; }
@@ -550,9 +555,10 @@ body {
   .auth-card { padding:24px 16px; }
   .auth-title { font-size:18px; }
   .studio-header { height:44px !important; }
-  .studio-sidebar.expanded { max-height:220px; }
+  .studio-sidebar.expanded { max-height:140px; }
   .text-editor { min-height:80px;font-size:13px; }
   .btn-generate { padding:9px;font-size:12px; }
   .player-area { height:50px; }
   .emotion-chip { font-size:10px;padding:3px 8px; }
+  .pill-btn { font-size:10px !important;padding:3px 6px !important; }
 }
